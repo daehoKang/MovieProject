@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <mapper namespace="com.MovieProject01.dao.MemberDao">
+  
+  <insert id="insertMember">
+  	INSERT INTO MEMBERS(MID, MPW, MNAME, MBIRTH, MEMAIL, MADDRESS, MFILENAME)
+  	VALUES(#{mid}, #{mpw}, #{mname}, TO_DATE(#{mbirth},'YYYY-MM-DD' ), #{memail}, #{maddress}, #{mfilename})
+  </insert>
+
+	<select id="loginMember" resultType="com.MovieProject01.dto.MemberDto">
+		SELECT * FROM MEMBERS WHERE MID = #{mid} AND MPW = #{mpw}
+	</select>
+	
+	<select id="memberView" resultType="com.MovieProject01.dto.MemberDto">
+		SELECT MID, MPW, MNAME, TO_CHAR(MBIRTH, 'YYYY-MM-DD') 
+		AS MBIRTH, MEMAIL, MADDRESS, MFILENAME 
+		FROM MEMBERS WHERE MID = #{mid}
+	</select>
+  </mapper>

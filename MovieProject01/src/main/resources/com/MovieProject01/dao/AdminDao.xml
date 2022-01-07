@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.MovieProject01.dao.AdminDao">
+
+	<select id="selectMemberList" resultType="com.MovieProject01.dto.MemberDto">
+		SELECT MID, MPW, MNAME, TO_CHAR(MBIRTH, 'YYYY-MM-DD') 
+		AS MBIRTH, MEMAIL, MADDRESS, MFILENAME
+		FROM MEMBERS
+	
+	</select>
+	
+	<update id="updateMemberModify">
+		UPDATE MEMBERS
+		SET MPW = #{mpw}, MNAME = #{mname}, MBIRTH = TO_DATE(#{mbirth},'yyyy-mm-dd'),
+			MEMAIL = #{memail}, MADDRESS = #{maddress}
+		WHERE MID = #{mid}
+	
+	</update>
+	
+	<select id="selectMemberReserveList" resultType="com.MovieProject01.dto.ReserveInfoDto">
+		SELECT MV.MOVNAME, MV.MOVCODE, TO_CHAR(RE.RESCTIME,'YYYY-MM-DD HH24:MI') AS RESCTIME, TH.THNAME, RE.RESCHALL, RE.RECOUNT, RE.RECODE 
+		FROM RESERVATION RE, THEATERS TH, SCHEDULES SC, MOVIES MV
+    	WHERE RE.RESCTHCODE = TH.THCODE
+        	AND RE.RESCHALL = SC.SCHALL
+        	AND RE.RESCTIME = SC.SCTIME
+        	AND RE.RESCTHCODE = SC.SCTHCODE
+        	AND TH.THCODE = SC.SCTHCODE
+        	AND SC.SCMOVCODE = MV.MOVCODE
+        	AND RE.REMID = #{remid}
+        ORDER BY RESCTIME DESC
+	</select>
+	
+	<select id="selectMovieList" resultType="com.MovieProject01.dto.MovieDto">
+		SELECT MOVCODE, MOVNAME, MOVDIRECTOR, MOVGENRE, MOVGRADE, TO_CHAR(MOVOPEN,'YYYY-MM-DD') AS MOVOPEN, MOVPOSTER, MOVSTATE
+		FROM MOVIES	
+	</select>
+	
+	<update id="updateMovieModify">
+		UPDATE MOVIES
+		SET  MOVNAME = #{movname}, MOVDIRECTOR = #{movdirector},
+		 	MOVGENRE = #{movgenre}, MOVGRADE = #{movgrade},
+		 	MOVOPEN = TO_DATE(#{movopen}, 'yyyy-mm-dd')
+		WHERE MOVCODE = #{movcode}
+	</update>
+
+	<insert id="insertMovie">
+		INSERT INTO MOVIES(MOVCODE, MOVNAME, MOVDIRECTOR, MOVGENRE, MOVGRADE, MOVOPEN, MOVPOSTER)
+		VALUES (#{movcode}, #{movname}, #{movdirector}, #{movgenre}, #{movgrade}, TO_DATE(#{movopen}, 'YYYY-MM-DD'), #{movposter})
+	
+	</insert>
+	
+	<select id="selectMaxMovcode" resultType="String">
+		SELECT MAX(MOVCODE) FROM MOVIES
+	
+	</select>
+	
+	<update id="updateMovieState">
+		UPDATE MOVIES
+		SET MOVSTATE= #{movstate}
+		WHERE MOVCODE = #{movcode}
+	</update>
+	
+	<select id="selecttheaterList" resultType="com.MovieProject01.dto.TheaterDto">
+		SELECT THCODE, THNAME, THADDRESS, THTEL, THSTATE
+		FROM THEATERS
+	</select>
+	
+	<update id="updateTheaterInfo">
+		UPDATE THEATERS
+		SET THNAME = #{thname}, THADDRESS = #{thaddress}, THTEL = #{thtel}
+		WHERE THCODE = #{thcode}
+	</update>
+	
+	<update id="updateThstate">
+		UPDATE THEATERS
+		SET THSTATE = #{thstate}
+		WHERE THCODE = #{thcode}
+	</update>
+	
+	<select id="selectMaxThcode" resultType="String">
+		SELECT MAX(THCODE)
+		FROM THEATERS
+	</select>
+	
+	<insert id="insertTheater">
+		INSERT INTO THEATERS (THCODE, THNAME, THADDRESS, THTEL)
+		VALUES (#{thcode}, #{thname}, #{thaddress}, #{thtel})
+	</insert>
+	
+	<select id="selectTheaterList" resultType="com.MovieProject01.dto.TheaterDto">
+		SELECT * FROM THEATERS
+	</select>
+	
+	<select id="selectThScList" resultType="com.MovieProject01.dto.ScheduleDto">
+		SELECT SCHALL, TO_CHAR(SCTIME,'HH24:MI') AS SCTIME
+		FROM SCHEDULES
+		WHERE SCTHCODE = #{scthcode} AND TO_CHAR(SCTIME,'YYYY-MM-DD') = #{scdate}
+	
+	</select>
+	
+	<insert id="insertSchedule">
+		INSERT INTO SCHEDULES(SCHALL, SCTIME, SCTHCODE, SCMOVCODE)
+		VALUES(#{schall},TO_DATE(#{sctime},'YYYY-MM-DD HH24:MI'), #{scthcode}, #{scmovcode})	
+	</insert>
+	
+</mapper>

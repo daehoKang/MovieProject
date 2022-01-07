@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.MovieProject01.dao.MovieDao">
+	
+	<select id="selectmovieList" resultType="com.MovieProject01.dto.MovieDto" >
+		SELECT MOVCODE, MOVNAME, MOVDIRECTOR, MOVGENRE, MOVGRADE, TO_CHAR(MOVOPEN,'YYYY-MM-DD') AS MOVOPEN, MOVPOSTER
+		FROM MOVIES
+		WHERE MOVSTATE = 1
+		ORDER BY MOVOPEN DESC	
+	</select>
+	
+	<select id="selectTheaterList" resultType="com.MovieProject01.dto.TheaterDto">
+		SELECT *
+		FROM THEATERS
+		WHERE THCODE IN( SELECT SCTHCODE FROM SCHEDULES WHERE SCMOVCODE = #{movcode} )
+			AND THSTATE = 1
+	</select>
+	
+
+	<select id="selectScDateList" resultType="com.MovieProject01.dto.ScheduleDto">
+		SELECT DISTINCT (TO_CHAR(SCTIME,'YYYY-MM-DD')) AS SCTIME
+		FROM SCHEDULES
+		WHERE SCMOVCODE = #{movcode} AND SCTHCODE = #{thcode}
+			AND SCTIME > SYSDATE
+	
+	</select>
+	
+	<select id="selectScHallTimeList" resultType="com.MovieProject01.dto.ScheduleDto">
+		SELECT SCHALL, TO_CHAR(SCTIME,'HH24:MI') as SCTIME
+    	FROM SCHEDULES
+    	WHERE SCMOVCODE = #{movcode} 
+        AND SCTHCODE = #{thcode}
+        AND TO_CHAR(SCTIME,'YYYY-MM-DD') = #{scDate}
+		
+	</select>
+	
+	<select id="selectMaxRecode" resultType="String">
+		SELECT MAX(RECODE) FROM RESERVATION
+	
+	</select>
+	
+	<insert id="insertReserveMovie">
+		INSERT INTO RESERVATION(RECODE,REMID,RESCHALL,RESCTIME,RESCTHCODE,RECOUNT)
+		VALUES( #{recode}, #{remid}, #{reschall}, TO_DATE(#{resctime},'YYYY-MM-DD HH24:MI'), #{rescthcode}, #{recount})
+	
+	</insert>
+	
+	<select id="selectReserveList" resultType="com.MovieProject01.dto.ReserveInfoDto">
+		SELECT MV.MOVNAME, MV.MOVCODE, TO_CHAR(RE.RESCTIME,'YYYY-MM-DD HH24:MI') AS RESCTIME, TH.THNAME, RE.RESCHALL, RE.RECOUNT, RE.RECODE 
+		FROM RESERVATION RE, THEATERS TH, SCHEDULES SC, MOVIES MV
+    	WHERE RE.RESCTHCODE = TH.THCODE
+        	AND RE.RESCHALL = SC.SCHALL
+        	AND RE.RESCTIME = SC.SCTIME
+        	AND RE.RESCTHCODE = SC.SCTHCODE
+        	AND TH.THCODE = SC.SCTHCODE
+        	AND SC.SCMOVCODE = MV.MOVCODE
+        	AND RE.REMID = #{remid}
+        ORDER BY RESCTIME DESC
+	
+	</select>
+	
+	<select id="selectMovieInfo" resultType="com.MovieProject01.dto.MovieDto">
+		SELECT MOVCODE, MOVNAME, MOVDIRECTOR, MOVGENRE, 
+			   MOVGRADE, TO_CHAR(MOVOPEN,'YYYY-MM-DD') AS MOVOPEN, MOVPOSTER, MOVSTATE
+		FROM MOVIES
+		WHERE MOVCODE = #{movcode}
+	
+	</select>
+	
+	
+	<delete id="reserveCancel">
+		DELETE FROM RESERVATION WHERE RECODE = #{recode}
+	</delete>
+	
+	<select id="selectMovieComment" resultType="com.MovieProject01.dto.CommentDto">
+		SELECT MV.MOVNAME, MV.MOVCODE, MV.MOVPOSTER, TO_CHAR(RE.RESCTIME,'YYYY-MM-DD HH24:MI') AS RESCTIME, TH.THNAME, RE.RESCHALL, RE.RECOUNT, RE.RECODE 
+   			FROM RESERVATION RE, THEATERS TH, SCHEDULES SC, MOVIES MV
+    		WHERE RE.RESCTHCODE = TH.THCODE
+       			AND RE.RESCHALL = SC.SCHALL
+        		AND RE.RESCTIME = SC.SCTIME
+        		AND RE.RESCTHCODE = SC.SCTHCODE
+        		AND TH.THCODE = SC.SCTHCODE
+        		AND SC.SCMOVCODE = MV.MOVCODE
+        		AND RE.RECODE = #{recode}
+	</select>
+	
+	<insert id="insertCommentWrite">
+		INSERT INTO MOVIECOMMENT(MC_RECODE, MC_MID, MC_MOVCODE, MC_COMMENT, MC_RECOMMEND, MC_DATE)
+		VALUES(#{mc_recode}, #{mc_mid}, #{mc_movcode}, #{mc_comment}, #{mc_recommend}, SYSDATE)
+	
+	</insert>
+	
+	<select id="selectCommentList" resultType="com.MovieProject01.dto.MovieCommentDto">
+		SELECT MC_RECODE, MC_MID, MC_MOVCODE, MC_COMMENT, MC_RECOMMEND, 
+		       TO_CHAR(MC_DATE,'YYYY-MM-DD HH24:MI:SS') AS MC_DATE 
+		FROM MOVIECOMMENT
+		WHERE MC_MOVCODE = #{movcode}
+	</select>
+	
+	<select id="selectMcRecode" resultType="String">
+		SELECT  MC_RECODE FROM MOVIECOMMENT
+		WHERE MC_RECODE = #{recode}
+	</select>
+	
+	<select id="selectReserveInfo" resultType="com.MovieProject01.dto.ReserveInfoDto">
+		SELECT MV.MOVNAME, MV.MOVCODE, MV.MOVPOSTER, TO_CHAR(RE.RESCTIME,'YYYY-MM-DD HH24:MI') AS RESCTIME, TH.THNAME, RE.RESCHALL, RE.RECOUNT, RE.RECODE 
+   			FROM RESERVATION RE, THEATERS TH, SCHEDULES SC, MOVIES MV
+    		WHERE RE.RESCTHCODE = TH.THCODE
+       			AND RE.RESCHALL = SC.SCHALL
+        		AND RE.RESCTIME = SC.SCTIME
+        		AND RE.RESCTHCODE = SC.SCTHCODE
+        		AND TH.THCODE = SC.SCTHCODE
+        		AND SC.SCMOVCODE = MV.MOVCODE
+        		AND RE.RECODE = #{recode}
+	</select>
+	
+	<select id="selectMvComment" resultType="com.MovieProject01.dto.MovieCommentDto">
+		SELECT * FROM MOVIECOMMENT
+		WHERE MC_RECODE = #{mc_recode}
+	</select>
+	
+	<select id="selectTotalCommentCount" resultType="int">
+		SELECT COUNT(*) FROM MOVIECOMMENT
+		WHERE MC_MOVCODE = #{movcode}
+	</select>
+	
+	<select id="selectGoodRecommend" resultType="int">
+		SELECT COUNT(*) FROM MOVIECOMMENT
+		WHERE MC_MOVCODE = #{movcode}
+			AND MC_RECOMMEND = 1
+	</select>
+	
+	<select id="selectTotalReserveCount" resultType="int">
+		SELECT COUNT(*) 
+		FROM RESERVATION RE, SCHEDULES SC, MOVIES MV
+		WHERE RE.RESCHALL = SC.SCHALL
+			AND RE.RESCTIME = SC.SCTIME
+			AND RE.RESCTHCODE = SC.SCTHCODE
+			AND SC.SCMOVCODE = MV.MOVCODE
+			AND MV.MOVSTATE = 1
+	
+	</select>
+	
+	<select id="selectAdvanceReserveCount" resultType="int">
+		SELECT COUNT(*)
+		FROM RESERVATION RE, SCHEDULES SC, MOVIES MV
+		WHERE RE.RESCHALL = SC.SCHALL
+    		AND RE.RESCTIME = SC.SCTIME
+    		AND RE.RESCTHCODE = SC.SCTHCODE
+    		AND SC.SCMOVCODE = MV.MOVCODE
+    		AND MV.MOVSTATE = 1
+    		AND SC.SCMOVCODE = #{movcode}
+	</select>
+	
+	   <select id="selectmovieSearch" resultType="com.MovieProject01.dto.MovieDto">
+		SELECT MOVCODE, MOVNAME, MOVDIRECTOR, MOVGENRE, MOVGRADE,  
+			TO_CHAR(MOVOPEN,'YYYY-MM-DD') AS MOVOPEN, MOVPOSTER, MOVSTATE 
+		FROM MOVIES
+		WHERE MOVNAME LIKE '%'||#{movieSearch}||'%'
+	</select> 
+	
+	
+</mapper>
